@@ -1,0 +1,225 @@
+
+// Dodamo knjižnico za uporabo WiFi protokola
+#include <WiFi.h>
+
+// Dodamo knjižnico za uporabo HTTP protokola (kot odjemalec/uporabnik)
+#include <HTTPClient.h>
+
+//------------------PODATKI ZA SPREMINJATI------------
+
+  // Programu povemo ime in geslo naše dostopne točke,
+  // ki ima dostop do interneta (vklopljeni mobilni podatki)
+  const char * ssid_hotspot = "Test";
+  const char * password_hotspot = "123test123";
+
+  // Programu povemo ID za naš program, ki spreminja
+  // Google Sheets preglednico našega delovnega mesta.
+  // Pozor: Podatek iz tabele prilepite med navednice " "
+  const String GOOGLE_SCRIPT_ID = "SPREMENI TO POLJE (GLEJ TABELO ZA DEPLOYMENT ID)";
+  
+//---------------KONEC PODATKOV ZA SPREMINJATI---------
+
+//-----------------------DODATEK-----------------------
+
+  // Programu povemo ime in geslo našega domačega WiFi-ja,
+  // ki ima dostop do interneta (vklopljeni mobilni podatki)
+  //const char * ssid_home = "DomaciWIFI";
+  //const char * password_home = "vegova";
+  
+//--------------------KONEC DODATKA--------------------
+
+// Spremenljivka, ki v besedi (več znakov) zajame to
+// kar dobi nazaj preko HTTP prokola
+String prejet_podatek="";
+
+/*
+ * Funkcija za vzpostavitev povezave do interneta preko
+ * WiFi protokola s pomočjo domačega omrežja ali dostopne
+ * točke.
+ * S to funkcijo lahko tudi preverimo, če je povezava še
+ * vedno vzpostavljena.
+*/
+bool WIFI()
+{
+  // Definiramo način WiFi povezave
+  WiFi.mode(WIFI_STA);
+
+  // Spremenljivka, ki označuje vzpostavljenost povezave z internetom
+  // 0=nepovezan; 1=povezan
+  bool wifi_povezava = 0;
+
+  // Spremenljivka, ki označuje trenutno zaporedno število poskusa
+  // vzpostavitve povezave z domačim omrežjem oz. dostopno točko
+  uint8_t stevilka_poskusa_povezave = 0;
+
+//-----------------------DODATEK-----------------------
+
+ // če želite vpeljati še domači wifi lahko odkomentirate spodnje vrstice
+  /*
+  WiFi.begin(ssid_home, password_home);
+
+  Serial.print("Povezujem se na domač wifi ");
+
+  uint8_t stevilka_poskusa_povezave = 0;
+  while ((WiFi.status() != WL_CONNECTED) && (stevilka_poskusa_povezave < 5)) {
+    delay(500);
+    stevilka_poskusa_povezave++;
+  }
+  */
+  
+//--------------------KONEC DODATKA-------------------- 
+
+  // Spremeljivko preventivno ponastavimo, če kdaj odkomentiramo
+  // dodatni del za domače omrežje
+  stevilka_poskusa_povezave = 0;
+
+  // Če ugotovimo, da je nismo povezani na nobeno dostopno točko
+  // se poskusimo povezati na dostopno točko navedeno v začetku
+  // programa
+  if (WiFi.status() != WL_CONNECTED)
+  {
+      Serial.print("Povezujem se na hotspot ");
+      WiFi.begin(ssid_hotspot, password_hotspot);
+      while ((WiFi.status() != WL_CONNECTED) && (stevilka_poskusa_povezave < 5)) {
+      delay(500);
+      stevilka_poskusa_povezave++;
+      Serial.print(".");
+    }
+  }
+
+  // Če je povezava uspešno vzpostavljena, spremenimo vrednost
+  // spremenljivke wifi_povezava na 1, sicer ostane 0
+  if (WiFi.status() == WL_CONNECTED)wifi_povezava = 1;
+
+  // Vrnemo stanje WiFi povezave
+  // 1=povezano, 0=nepovezano
+  return wifi_povezava;
+}
+
+/*
+ * Funkcija, ki prejme prvi podatek iz Google Sheets tabele našega 
+ * delovnega mesta, ki ga še nismo prebrali.
+*/
+void PREJMI_PODATKE()
+{
+  // Inicializiramo spremenljivko http, da bo tipa HTTPClient
+  HTTPClient http;
+
+  // Definiramo URL (link) do naše tabele, natančneje do
+  // Google Script programa naše Google Sheets tabele
+  const String url = "https://script.google.com/macros/s/" + GOOGLE_SCRIPT_ID + "/exec?read";
+
+  // Definiramo URL in certifikat
+  http.begin(url.c_str());
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+
+  // Inicializiramo spremeljivko httpCode, ki bo shranila vrednost
+  // ki jo bomo prejeli na koncu HTTP protokola, ki nam bo
+  // povedala informacije o uspešnost prenosa podatkov
+  int httpCode = 0;
+
+  // Prejmemo podatke preko HTTP GET prokola in kodo shranimo v
+  // spremenljivko httpCode
+  httpCode = http.GET();
+
+  // Če je bil prenos podatkov uspešen, torej če je httpCode
+  // večji od 0 lahko obdelamo podatke, zato jih prvo shranimo
+  // kot besedo v globalno spremenljivko prejet_podatek
+  if (httpCode > 0)prejet_podatek = http.getString();
+
+  // V kolikor prenos podatkov ni bil uspešen to izpišemo
+  // na serijski vmesnik
+  else Serial.println("Error on HTTP request");
+
+  // Zaključimo sejo HTTP prokola
+  http.end();
+}
+
+/*
+ * Funkcija, ki pošlje podatek (definiran v argumentu) preko
+ * HTTP POST protokola. Poslan podatek se zapiše v prvo prazno
+ * polje tabele (v definiranem obsegu 10-ih celic)
+*/
+int POSLJI_PODATKE(String podatki_za_poslat)
+{
+  // Inicializiramo spremenljivko http, da bo tipa HTTPClient
+  HTTPClient http;
+
+  // Definiramo URL (link) do naše tabele, natančneje do
+  // Google Script programa naše Google Sheets tabele
+  const String url = "https://script.google.com/macros/s/" + GOOGLE_SCRIPT_ID + "/exec?read";
+
+  // Definiramo URL in certifikat
+  http.begin(url.c_str());
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+
+  // Inicializiramo spremeljivko httpCode, ki bo shranila vrednost
+  // ki jo bomo prejeli na koncu HTTP protokola, ki nam bo
+  // povedala informacije o uspešnost prenosa podatkov.
+  // Pošljemo podatke preko HTTP POST prokola in kodo shranimo v
+  // spremenljivko httpCode
+  int httpCode = http.POST(podatki_za_poslat);
+
+  // Prejeto HTTP kodo shranimo kar v globalno spremenljivko,
+  // saj je to edini podatek, ki ga pri POST-u prejmemo.
+  // Program deluje brez te vrstice
+  prejet_podatek=String(httpCode);
+
+  // Zaključimo sejo HTTP prokola
+  http.end();
+
+  // Vrnemo vrednost vrnjene HTTP kode
+  return httpCode;
+}
+
+void setup() 
+{
+  // Inicializiramo začetek serijske komunikacije
+  // z BAUD hitrostjo 115200 bit/s
+  Serial.begin(115200);
+  delay(10);
+}
+
+void loop() 
+{
+  // Inicializiramo spremenljivko, ki bo štela ponovitve zanke
+  // z namenom preizkusa izpisa.
+  // static ima enak učinek kot globalna spremenljivka, pri
+  // čemer je varnejša za uporabo
+  static int test=0;
+
+  // Če je WiFi povezava vzpostavljena prejmemo podatke in jih
+  // izpišemo, če ni vrnjen podatek prazen
+  if(WIFI())
+  {
+    PREJMI_PODATKE();
+    if(prejet_podatek!="")Serial.println(prejet_podatek);
+  }
+
+  // Če WiFi povezava ni vzpostavljena, to izpišemo
+  else 
+  {
+    Serial.println("Ni povezave");
+    delay(500);
+  }
+
+  // Če je WiFi povezava vzpostavljena pošljemo vrednost ponovitve zanke
+  //  in izpišemo vrnjeno HTTP kodo, če je zapis uspešen
+  if(WIFI())
+  {
+    if(POSLJI_PODATKE(String(test))<0)Serial.println("neuspešen zapis");
+    else 
+    {
+      Serial.print("USPEŠEN ZAPIS! ");
+      Serial.println(prejet_podatek);
+    }
+  }
+  else 
+  {
+    Serial.println("Ni povezave");
+    delay(500);
+  }
+
+  // Inkrementiramo vrednost spremenljivke test za eno gor
+  test++;
+}
