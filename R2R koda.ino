@@ -1,29 +1,24 @@
-// ESP32 6-bit DAC controller with analog measurement
+// Arduino Uno 6-bit DAC controller with analog measurement
 // Pins 2-7 used for 6-bit DAC output (D2 = LSB, D7 = MSB)
-// Analog inputs on pins 34 and 35
+// Analog inputs on pins A0 and A1
 
-// DAC output pins (must be consecutive starting from 2 for port manipulation)
+// DAC output pins (must be PORTD pins 2-7 on Uno)
 #define DAC_START_PIN 2
 #define DAC_PIN_COUNT 6
 
 // Analog input pins
-#define ANALOG_PIN1 34
-#define ANALOG_PIN2 35
+#define ANALOG_PIN1 A0
+#define ANALOG_PIN2 A1
 
 // Measurement parameters
 #define SETTLING_TIME_MS 10  // Time to wait for signal to stabilize
 #define MEASUREMENT_DELAY_MS 50  // Time between measurements
 
-// For ESP32, we need to use GPIO_OUT_REG for direct port manipulation
-#define DAC_PORT_MASK 0xFC  // Binary 11111100 - pins 2-7
-
 void setup() {
   Serial.begin(115200);
   
-  // Set DAC pins as outputs
-  for (int i = 0; i < DAC_PIN_COUNT; i++) {
-    pinMode(DAC_START_PIN + i, OUTPUT);
-  }
+  // Set DAC pins as outputs (pins 2-7 on PORTD)
+  DDRD |= 0xFC;  // Binary 11111100 - pins 2-7 as outputs
   
   // Print CSV header
   Serial.println("DAC Voltage,Analog1,Analog2");
@@ -42,8 +37,8 @@ void loop() {
   int analog1 = analogRead(ANALOG_PIN1);
   int analog2 = analogRead(ANALOG_PIN2);
   
-  // Calculate approximate DAC voltage (assuming 3.3V reference)
-  float dacVoltage = (dacValue & 0x3F) * (3.3 / 63.0);  // 6-bit resolution
+  // Calculate approximate DAC voltage (assuming 5V reference)
+  float dacVoltage = (dacValue & 0x3F) * (5.0 / 63.0);  // 6-bit resolution
   
   // Output data in CSV format
   Serial.print(dacVoltage, 4);
@@ -59,21 +54,24 @@ void loop() {
   delay(MEASUREMENT_DELAY_MS);
 }
 
-// Set DAC value using direct port manipulation
+// Set DAC value using direct port manipulation (PORTD on Uno)
 void setDacValue(uint8_t value) {
-  // Mask to only use 6 bits
+  // Mask to only use 6 bits and shift to align with PORTD (pins 2-7)
   value &= 0x3F;
   
-  // For ESP32, we need to manipulate the GPIO_OUT_REG register
-  // First read current state of all pins
-  uint32_t portState = GPIO.out;
+  // PORTD contains pins 0-7. We need to:
+  // 1. Preserve the state of pins 0-1 (RX/TX - don't touch these!)
+  // 2. Set pins 2-7 according to our value
   
-  // Clear the bits we want to change (pins 2-7)
-  portState &= ~DAC_PORT_MASK;
+  // Read current PORTD state
+  uint8_t portState = PORTD;
   
-  // Set the new bits (shift left by 2 because we start at pin 2)
-  portState |= ((uint32_t)value << DAC_START_PIN);
+  // Clear bits 2-7 (mask 0x03 keeps bits 0-1)
+  portState &= 0x03;
+  
+  // Set the new bits (shift left by 2 to align with PORTD)
+  portState |= (value << 2);
   
   // Write to the register
-  GPIO.out = portState;
+  PORTD = portState;
 }
