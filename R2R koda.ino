@@ -11,7 +11,7 @@
 #define ANALOG_PIN2 A1
 
 // Measurement parameters
-#define SETTLING_TIME_MS 10  // Time to wait for signal to stabilize
+#define SETTLING_TIME_MS 20  // Time to wait for signal to stabilize
 #define MEASUREMENT_DELAY_MS 50  // Time between measurements
 
 void setup() {
@@ -21,11 +21,11 @@ void setup() {
   DDRD |= 0xFC;  // Binary 11111100 - pins 2-7 as outputs
   
   // Print CSV header
-  Serial.println("DAC Voltage,Analog1,Analog2");
+  Serial.println("DAC Voltage,LED tok,LED napetost");
 }
-
+//uint32_t dacValue = 0;
 void loop() {
-  static uint8_t dacValue = 0;
+  static uint8_t dacValue = 0; 
   
   // Update DAC output using direct port manipulation
   setDacValue(dacValue);
@@ -34,29 +34,40 @@ void loop() {
   delay(SETTLING_TIME_MS);
   
   // Read analog inputs
-  int analog1 = analogRead(ANALOG_PIN1);
-  int analog2 = analogRead(ANALOG_PIN2);
+  int analog0 = analogRead(ANALOG_PIN1);
+  int analog1 = analogRead(ANALOG_PIN2);
   
   // Calculate approximate DAC voltage (assuming 5V reference)
-  float dacVoltage = (dacValue & 0x3F) * (5.0 / 63.0);  // 6-bit resolution
-  
+  float dacVoltage = (dacValue/4) * (5.0 / 63.0);  // 6-bit resolution
+  //float dacVoltage = (dacValue) * (5.0 / 255.0);
+
   // Output data in CSV format
   Serial.print(dacVoltage, 4);
-  Serial.print(",");
-  Serial.print(analog1);
-  Serial.print(",");
-  Serial.println(analog2);
-  
+  Serial.print(";");
+  Serial.print(((analog0*5.0/1024)*2-(analog1*5.0/1024)*2)/100.0,3);
+  Serial.print(";");
+  Serial.println(analog1*2*5.0/1024,3);
+
+  //Serial.println(dacValue);
+  if (dacValue>=250)
+  {
+    while (true)
+    {delay(1);
+    }
+  }
+
   // Increment DAC value (6-bit, but we'll let it roll over to simulate 8-bit steps)
   dacValue += 4;  // Step by 4 to simulate 8-bit behavior (256/64=4)
   
   // Delay between measurements
   delay(MEASUREMENT_DELAY_MS);
+  
 }
 
 // Set DAC value using direct port manipulation (PORTD on Uno)
 void setDacValue(uint8_t value) {
   // Mask to only use 6 bits and shift to align with PORTD (pins 2-7)
+  value=value/4;
   value &= 0x3F;
   
   // PORTD contains pins 0-7. We need to:
