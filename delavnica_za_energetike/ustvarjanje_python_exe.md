@@ -26,7 +26,7 @@ Razlaga uporabljenih stikal (zastavic):
 
 --noconfirm: Samodejno prepiše stare datoteke, če postopek ponavljate.
 
-3. Kje najdem svojo aplikacijo?
+## 3. Kje najdem svojo aplikacijo?
 Po končanem postopku (ki lahko traja minuto ali dve) se bodo v vaši mapi pojavile nove mape. Vaš program se nahaja v mapi:
 
 📂 dist/ ->  📄 graf_monitor.exe
