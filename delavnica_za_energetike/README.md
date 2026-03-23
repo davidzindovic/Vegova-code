@@ -13,7 +13,8 @@ Alternativna opcija je uporaba programa Putty, kjer izberete možnost "Serial" i
 # Reševanje težav
 Za namen te delavnice se izognite uporabit umetne inteligence in poskusite z uporabo brksalnika Google najti primer, kjer je nekdo že imel podobno težavo. Znan forum je StackOverflow.
 
-# Preizkusite se v eni izmed sledečih nalog
+# Preizkusite se v eni izmed nalog
+Naloge se nahajajo v datoteki ```izzivi.md```.
 
 # Dodaten izziv
 Na računalnik namestite Python in zaženite "procesiranje_na_racunalniku.py", ki se nahaja v tej mapi.
