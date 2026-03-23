@@ -3,7 +3,7 @@
 2. Kopirajte kodo s CTRL+C (npr. osnove.ino) v Arduino IDE okno, tako da CTRL+A (izberete vse) in CTRL+V (prilepite kodo)
 3. Ploščo povežite z USB priključkom, ki je dostopen na mizi.
 4. Na vrhu Arduino IDE okna najdite zavihtek ```Orodja``` in izberite med možnostmi ```Plošča:```, nato pa najdite ```ESP32-WROOM-DA Module``` in ga z levim klikom izberite
-5. Ponovno odprite zavihek "Orodja" in izberite možnost ```Vrata:```, nato izberite ```COM6```. V kolikor "COM6" ni na voljo, izberite tistega, ki NI COM1!
+5. Ponovno odprite zavihek ```Orodja``` in izberite možnost ```Vrata:```, nato izberite ```COM6```. V kolikor "COM6" ni na voljo, izberite tistega, ki NI COM1!
 6. Na vrhu oknu najdite krogec s puščico, ki kaže desno. Če postavite miško na ta krogec, bi se moral pojaviti napis "Naloži". Z levim klikom se začne prevajanje kode. V kolikor je prevajanje uspešno, se nato izvede še nalaganje. Če pa opazite na dnu okna veliko teksta (rdeče s črnim ozadjem) ima vaš program napake, ki jih morate odpraviti in nato ponoviti korak št. 6.
 
 # Spremljanje izpisa
