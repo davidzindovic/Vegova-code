@@ -3,6 +3,8 @@
  * Namen: Učenje spremenljivk, podatkovnih vrst in funkcij
  */
 
+
+
 // --- 1. ODSEK: SPREMENLJIVKE IN PODATKOVNE VRSTE ---
 // Tukaj dijaki definirajo svoje podatke
 int celoStevilo = 25;          // int: za cela števila (npr. število meritev)
@@ -11,11 +13,18 @@ char znak = 'A';               // char: za posamezne znake
 String besedilo = "Meritev";   // String: za nize znakov
 bool stanje = true;            // bool: logična vrednost (true/false)
 
+
+
+
 // --- 2. ODSEK: NASTAVITVE (Setup) ---
 void setup() {
   // Inicializacija serijske komunikacije (hitrost 9600 baudov)
   Serial.begin(9600);
 }
+
+
+
+
 
 // --- 3. ODSEK: GLAVNA ZANKA (Loop) ---
 void loop() {
@@ -32,6 +41,10 @@ void loop() {
   decimalnoStevilo += 0.5; 
 }
 
+
+
+
+
 // --- 4. ODSEK: PRIMERI FUNKCIJ ---
 
 /*
@@ -42,6 +55,9 @@ void loop() {
 int izracunajKvadrat(int x) {
   return x * x;
 }
+
+
+
 
 /*
  * Opis: Funkcija pripravi podatke za Python v formatu: vrednost1,vrednost2
