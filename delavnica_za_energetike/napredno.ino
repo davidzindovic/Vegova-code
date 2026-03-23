@@ -2,10 +2,14 @@
  * PREDLOGA ZA ARDUINO - SEZNAMI IN FUNKCIJE
  */
 
+
+
+
 // --- 1. ODSEK: POLJA (ARRAYS) ---
 const int VELIKOST_SEZNAMA = 5;      // Določimo fiksno velikost polja
 float meritve[VELIKOST_SEZNAMA];     // Seznam za shranjevanje zadnjih 5 temperatur
 int trenutniIndeks = 0;              // Števec, kje v seznamu smo
+
 
 void setup() {
   Serial.begin(9600);
@@ -14,6 +18,7 @@ void setup() {
     meritve[i] = 0.0;
   }
 }
+
 
 void loop() {
   // Simulacija nove meritve (npr. senzor)
@@ -33,6 +38,10 @@ void loop() {
   delay(500); // Hitrejše osveževanje za graf (0.5 sekunde)
 }
 
+
+
+
+
 // --- 2. ODSEK: FUNKCIJE ZA DELO S SEZNAMI ---
 
 /*
@@ -49,6 +58,8 @@ void dodajVSeznam(float v) {
     trenutniIndeks = 0;
   }
 }
+
+
 
 /*
  * Opis: Sešteje vse elemente v polju in vrne povprečno vrednost.
